@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { Calendar, User, ArrowUpRight } from 'lucide-react';
+import { Calendar, User, ArrowUpRight, ImageOff } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1611974715853-2b8ef959d9bb?auto=format&fit=crop&q=80&w=800';
+const hasValidImage = (value) => {
+  if (typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  return trimmed.startsWith('http://') || trimmed.startsWith('https://');
+};
 
 const ArticleCard = ({
   image,
@@ -15,7 +19,7 @@ const ArticleCard = ({
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  const imgSrc = !image || imgError ? FALLBACK_IMAGE : image;
+  const showImage = hasValidImage(image) && !imgError;
 
   const handleViewArticle = () => {
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
@@ -26,21 +30,30 @@ const ArticleCard = ({
 
       {/* Image Container */}
       <div className="relative h-48 w-full overflow-hidden bg-[#1a1a1a]">
-        {/* Spinner while image is loading */}
-        {!imgLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <ClipLoader color="#a855f7" size={28} />
+        {showImage ? (
+          <>
+            {/* Spinner while image is loading */}
+            {!imgLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ClipLoader color="#a855f7" size={28} />
+              </div>
+            )}
+            <img
+              src={image}
+              alt={title}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => { setImgError(true); setImgLoaded(true); }}
+              className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                imgLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          </>
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-linear-to-br from-[#181818] via-[#121212] to-[#0f0f0f] text-gray-500">
+            <ImageOff size={26} className="text-gray-600" />
+            <p className="text-xs tracking-wide uppercase">No image available</p>
           </div>
         )}
-        <img
-          src={imgSrc}
-          alt={title}
-          onLoad={() => setImgLoaded(true)}
-          onError={() => { setImgError(true); setImgLoaded(true); }}
-          className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
-            imgLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
         <div className="absolute inset-0 bg-linear-to-t from-[#0f0f0f] to-transparent opacity-60" />
       </div>
 
