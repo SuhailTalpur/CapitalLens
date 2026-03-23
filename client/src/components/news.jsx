@@ -8,23 +8,25 @@ const News = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [articles, setArticles] = useState([]);
   const [totalResults, setTotalResults] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // NewsAPI free tier caps at 100 results
-  const totalPages = Math.min(Math.ceil(totalResults / PAGE_SIZE), Math.floor(100 / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
 
   const loadNews = useCallback(async (category, pageNum) => {
     setLoading(true);
     setError(null);
     try {
-      const { articles: data, totalResults: total } = await fetchNews(category, pageNum);
+      const { articles: data, totalResults: total, hasMore: canLoadMore } = await fetchNews(category, pageNum);
       setArticles(data);
       setTotalResults(total);
+      setHasMore(Boolean(canLoadMore));
     } catch (err) {
       setError(err.message);
       setArticles([]);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -92,7 +94,7 @@ const News = () => {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {(totalPages > 1 || page > 1 || hasMore) && (
             <div className="flex items-center justify-center gap-2 mt-12">
               <button
                 onClick={() => handlePageChange(page - 1)}
@@ -129,7 +131,7 @@ const News = () => {
 
               <button
                 onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
+                disabled={page >= totalPages && !hasMore}
                 className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
               >
                 Next →

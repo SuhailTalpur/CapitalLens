@@ -2,7 +2,7 @@ import React from 'react';
 
 const categories = [
   'All', 'Politics', 'Weather', 'Technology',
-  'Sports', 'Crypto', 'Stocks', 'Real Estate',
+  'Sports', 'Entertainment', 'Stocks', 'Real Estate',
   'AI', 'Energy', 'Health',
 ];
 
